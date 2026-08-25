@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../auth/logic/auth_bloc.dart';
+import '../../../auth/logic/auth_bloc.dart';
 
 /// TABIBI (طبيبي) - Dynamic User Profile & Dashboard Screen
 class ProfileScreen extends StatelessWidget {
