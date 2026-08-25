@@ -1,0 +1,48 @@
+name: TABIBI - Cloud APK Build
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: # يتيح لك الضغط على زر تشغيل البناء يدوياً في أي وقت
+
+jobs:
+  build:
+    name: Build Android Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. جلب كود المشروع
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. إعداد بيئة Java 17
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 3. إعداد بيئة Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      # 4. تثبيت الحزم والمكتبات
+      - name: Install Dependencies
+        run: flutter pub get
+
+      # 5. بناء ملف الـ APK النهائي
+      - name: Build APK Release
+        run: flutter build apk --release
+
+      # 6. تجهيز ملف الـ APK وتوفيره للتحميل المباشر
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tabibi-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7
