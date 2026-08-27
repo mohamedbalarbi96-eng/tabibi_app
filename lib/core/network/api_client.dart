@@ -27,7 +27,7 @@ class ApiClient {
     // إعداد السيرفر الاحتياطي (PHP Web)
     _backupDio = Dio(
       BaseOptions(
-        baseUrl: ApiEndpoints.backupUrl,
+        baseUrl: ApiEndpoints.baseUrl,
         connectTimeout: ApiEndpoints.connectTimeout,
         receiveTimeout: ApiEndpoints.receiveTimeout,
         headers: {
