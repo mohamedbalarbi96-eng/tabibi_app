@@ -5,11 +5,29 @@ import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/storage/secure_storage.dart';
 import 'user_model.dart';
 
-/// TABIBI (طبيبي) - Authentication Repository
+/// TABIBI (طبيبي) - Robust Authentication Repository with Type Safety
 class AuthRepository {
   final ApiClient _apiClient = ApiClient();
   final SecureStorage _secureStorage = SecureStorage();
   static const String _userCacheKey = 'tabibi_cached_user';
+
+  /// دالة مساعدة لضمان استخراج Map دائماً حتى لو أرجع السيرفر نصاً
+  Map<String, dynamic> _parseResponse(dynamic rawData) {
+    if (rawData is Map<String, dynamic>) {
+      return rawData;
+    } else if (rawData is Map) {
+      return Map<String, dynamic>.from(rawData);
+    } else if (rawData is String) {
+      try {
+        final decoded = jsonDecode(rawData);
+        if (decoded is Map<String, dynamic>) return decoded;
+        if (decoded is Map) return Map<String, dynamic>.from(decoded);
+      } catch (_) {
+        throw 'استجابة غير صالحة من الخادم (قد يكون الخادم محجوباً أو غير متاح حالياً).';
+      }
+    }
+    throw 'تعذر قراءة بيانات الخادم، يرجى المحاولة لاحقاً.';
+  }
 
   /// 1. تسجيل الدخول
   Future<UserModel> login({
@@ -22,23 +40,22 @@ class AuthRepository {
       data: {
         'email': email.trim(),
         'password': password,
-        'device_name': deviceName ?? 'Android / iOS Device',
+        'device_name': deviceName ?? 'Linux Desktop / Mobile',
       },
     );
 
-    final data = response.data;
+    final data = _parseResponse(response.data);
     if (data['success'] == true && data['data'] != null) {
       final token = data['data']['token'] as String;
-      final userJson = data['data']['user'] as Map<String, dynamic>;
+      final userJson = Map<String, dynamic>.from(data['data']['user'] as Map);
       final user = UserModel.fromJson(userJson);
 
-      // حفظ التوكن وبيانات المستخدم محلياً
       await _secureStorage.saveToken(token);
       await _saveUserLocally(user);
 
       return user;
     } else {
-      throw data['message'] ?? 'فشل تسجيل الدخول، يرجى المحاولة لاحقاً.';
+      throw data['message'] ?? 'فشل تسجيل الدخول، يرجى التحقق من البيانات.';
     }
   }
 
@@ -75,10 +92,10 @@ class AuthRepository {
       },
     );
 
-    final data = response.data;
+    final data = _parseResponse(response.data);
     if (data['success'] == true && data['data'] != null) {
       final token = data['data']['token'] as String;
-      final userJson = data['data']['user'] as Map<String, dynamic>;
+      final userJson = Map<String, dynamic>.from(data['data']['user'] as Map);
       final user = UserModel.fromJson(userJson);
 
       await _secureStorage.saveToken(token);
@@ -100,11 +117,12 @@ class AuthRepository {
       },
     );
 
-    final data = response.data;
+    final data = _parseResponse(response.data);
     if (data['success'] == true && data['data'] != null) {
+      final resData = Map<String, dynamic>.from(data['data'] as Map);
       return {
-        'question_key': data['data']['question_key'] ?? '',
-        'question_text': data['data']['question_text'] ?? '',
+        'question_key': resData['question_key']?.toString() ?? '',
+        'question_text': resData['question_text']?.toString() ?? '',
       };
     } else {
       throw data['message'] ?? 'لم يتم العثور على سؤال أمان لهذا البريد.';
@@ -129,11 +147,11 @@ class AuthRepository {
       },
     );
 
-    final data = response.data;
+    final data = _parseResponse(response.data);
     if (data['success'] == true) {
-      return data['message'] ?? 'تم تحديث كلمة المرور بنجاح.';
+      return data['message']?.toString() ?? 'تم تحديث كلمة المرور بنجاح.';
     } else {
-      throw data['message'] ?? 'فشل تحديث كلمة المرور، يرجى التحقق من الإجابة.';
+      throw data['message']?.toString() ?? 'فشل تحديث كلمة المرور، يرجى التحقق من الإجابة.';
     }
   }
 
@@ -162,7 +180,6 @@ class AuthRepository {
     await prefs.remove(_userCacheKey);
   }
 
-  /// حفظ بيانات المستخدم في SharedPreferences
   Future<void> _saveUserLocally(UserModel user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userCacheKey, jsonEncode(user.toJson()));
