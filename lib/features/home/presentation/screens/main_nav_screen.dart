@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../patient/presentation/screens/patient_home_screen.dart';
-import '../../patient/presentation/screens/search_and_book_screen.dart';
-import '../../patient/presentation/screens/records_and_prescriptions_screen.dart';
-import '../../chat/presentation/screens/chat_screen.dart';
-import '../../profile/presentation/screens/profile_screen.dart';
+import '../../../patient/presentation/screens/patient_home_screen.dart';
+import '../../../patient/presentation/screens/search_and_book_screen.dart';
+import '../../../patient/presentation/screens/records_and_prescriptions_screen.dart';
+import '../../../chat/presentation/screens/chat_screen.dart';
+import '../../../profile/presentation/screens/profile_screen.dart';
 
 /// TABIBI (طبيبي) - Master Navigation Shell with Floating Curved Bottom Bar
 class MainNavScreen extends StatefulWidget {

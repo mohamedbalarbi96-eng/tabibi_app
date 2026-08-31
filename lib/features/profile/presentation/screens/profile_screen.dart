@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/glass_bento_card.dart';
-import '../../auth/logic/auth_bloc.dart';
+import '../../../auth/logic/auth_bloc.dart';
 
 /// TABIBI (طبيبي) - Ultra-Modern Glassmorphic Bento User Profile & Stats Screen
 class ProfileScreen extends StatelessWidget {
