@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/glass_bento_card.dart';
-import '../../auth/logic/auth_bloc.dart';
-import '../../auth/logic/auth_state.dart';
+import '../../../auth/logic/auth_bloc.dart';
+import '../../../auth/logic/auth_state.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -20,7 +20,7 @@ class ProfileScreen extends StatelessWidget {
         child: BlocConsumer<AuthCubit, AuthState>(
           listener: (context, state) {
             if (state is Unauthenticated) {
-              context.go('/login');
+              context.go('/landing');
             }
           },
           builder: (context, state) {
