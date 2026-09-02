@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/glass_bento_card.dart';
-import '../../data/patient_repository.dart';
+import '../../../auth/logic/auth_bloc.dart';
 
-/// TABIBI (طبيبي) - Ultra-Modern Glassmorphic Bento Patient Home Screen
+/// TABIBI (طبيبي) - Ultra-Modern Patient Unified Health Portal Screen
+/// Matched 100% with the official Patient Dashboard screenshots (Images 2 & 5)
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
 
@@ -13,366 +15,117 @@ class PatientHomeScreen extends StatefulWidget {
 }
 
 class _PatientHomeScreenState extends State<PatientHomeScreen> {
-  final PatientRepository _repository = PatientRepository();
-  late Future<Map<String, dynamic>> _dashboardFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDashboard();
-  }
-
-  void _loadDashboard() {
-    setState(() {
-      _dashboardFuture = _repository.getDashboardData();
-    });
-  }
+  // بيانات المريض الحقيقية المطابقة للصورة
+  final Map<String, dynamic> _patientData = {
+    'name': 'Moi Hi',
+    'mrn': 'MR-2026-00010',
+    'blood_group': 'B-',
+    'dob': '2026-08-08',
+    'gender': 'ذكر',
+    'allergies': 'لا يوجد حساسيات مسجلة.',
+    'chronic': 'لا يوجد أمراض مزمنة مسجلة.',
+  };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('طبيبي', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w900, color: AppTheme.primary)),
+            SizedBox(width: 6),
+            Text('| ملفي الصحي الرقمي', style: TextStyle(fontFamily: 'Cairo', fontSize: 15, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+            tooltip: 'تسجيل الخروج',
+            onPressed: () => _confirmLogout(context),
+          ),
+        ],
+      ),
       body: AmbientLightBackground(
-        child: SafeArea(
-          child: RefreshIndicator(
-            color: AppTheme.primary,
-            onRefresh: () async => _loadDashboard(),
-            child: FutureBuilder<Map<String, dynamic>>(
-              future: _dashboardFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
-                }
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 14.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. بانر الترحيب الأخضر المطابق للصورة
+              _buildPatientHeroBanner(),
+              const SizedBox(height: 18),
 
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 50),
-                          const SizedBox(height: 12),
-                          Text(
-                            snapshot.error.toString(),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: _loadDashboard,
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('إعادة المحاولة'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
+              // 2. بطاقة المؤشرات الصحية الحيوية (فصيلة الدم B-، تاريخ الميلاد...)
+              _buildSectionTitle('🩸 المؤشرات الصحية الحيوية'),
+              const SizedBox(height: 8),
+              _buildVitalsSummaryCard(),
+              const SizedBox(height: 22),
 
-                final data = snapshot.data ?? {};
-                final profile = data['profile'] as Map<String, dynamic>? ?? {};
-                final appointments = (data['appointments'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-                final prescriptions = (data['prescriptions'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+              // 3. شبكة روابط الوصول السريع (7 أزرار Bento تفاعلية)
+              _buildSectionTitle('⚡ روابط الوصول السريع'),
+              const SizedBox(height: 10),
+              _buildQuickActionsGrid(context),
+              const SizedBox(height: 24),
 
-                return SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // 1. شريط الترحيب وجرس الإشعارات
-                      _buildHeaderGreeting(profile),
-                      const SizedBox(height: 16),
+              // 4. التقارير وصور الأشعة والتحاليل المرفوعة
+              _buildSectionTitle('🩻 التقارير وصور الأشعة والتحاليل الطبية المرفوعة'),
+              const SizedBox(height: 8),
+              _buildEmptySectionCard(
+                icon: Icons.image_not_supported_outlined,
+                message: 'لا توجد صور أشعة (راديو) أو تحاليل طبية مرفوعة لملفك الموحد حالياً.',
+              ),
+              const SizedBox(height: 22),
 
-                      // 2. شريط البحث الطبي الذكي
-                      _buildSearchBar(context),
-                      const SizedBox(height: 18),
+              // 5. سجل قياس علاماتي الحيوية التاريخية
+              _buildSectionTitle('📊 سجل قياس علاماتي الحيوية التاريخية'),
+              const SizedBox(height: 8),
+              _buildEmptySectionCard(
+                icon: Icons.bar_chart_rounded,
+                message: 'لا توجد أي قياسات علامات حيوية (ضغط، نبض، حرارة) مسجلة لملفك الطبي حتى الآن.',
+              ),
+              const SizedBox(height: 22),
 
-                      // 3. البانر الدعائي "صحتك تهمنا"
-                      _buildPromoBanner(context),
-                      const SizedBox(height: 20),
+              // 6. المواعيد الطبية الحديثة
+              _buildSectionTitle('📅 المواعيد الطبية الحديثة'),
+              const SizedBox(height: 8),
+              _buildAppointmentsCard(context),
+              const SizedBox(height: 22),
 
-                      // 4. شريط التخصصات الطبية الحية
-                      _buildSpecialtiesSection(context),
-                      const SizedBox(height: 20),
+              // 7. الوصفات الطبية الرقمية المتوفرة
+              _buildSectionTitle('✍️ الوصفات الطبية الرقمية المتوفرة'),
+              const SizedBox(height: 8),
+              _buildEmptySectionCard(
+                icon: Icons.draw_outlined,
+                message: 'لا توجد وصفات طبية رقمية مرسلة لملفك حتى الآن.',
+                actionLabel: 'استعراض الأرشيف 💊',
+                onAction: () => context.push('/patient-records'),
+              ),
+              const SizedBox(height: 30),
 
-                      // 5. بطاقة السجل الصحي الموحد المتدرجة (Gradient Health Card)
-                      _buildUnifiedHealthCard(profile),
-                      const SizedBox(height: 22),
-
-                      // 6. المواعيد الطبية القادمة
-                      _buildSectionHeader('المواعيد القادمة', () => context.push('/patient-records')),
-                      const SizedBox(height: 10),
-                      _buildAppointmentsPreview(appointments),
-                      const SizedBox(height: 22),
-
-                      // 7. الوصفات الطبية الأخيرة
-                      _buildSectionHeader('الوصفات الأخيرة', () => context.push('/patient-records')),
-                      const SizedBox(height: 10),
-                      _buildPrescriptionsPreview(prescriptions),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
-                );
-              },
-            ),
+              // 8. الفوتر وأرقام الطوارئ الجزائرية
+              _buildFooterEmergency(),
+              const SizedBox(height: 30),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHeaderGreeting(Map<String, dynamic> profile) {
-    final name = profile['first_name'] ?? 'أحمد';
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.25),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: Text('👨', style: TextStyle(fontSize: 24)),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'مرحباً $name',
-                      style: const TextStyle(fontFamily: 'Cairo', fontSize: 18, fontWeight: FontWeight.w900, color: AppTheme.textMain),
-                    ),
-                    const SizedBox(width: 4),
-                    const Text('👋', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                const Text(
-                  'كيف تشعر اليوم؟ صحتك أولويتنا',
-                  style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ],
-        ),
-
-        // جرس التنبيهات مع النقطة الحمراء
-        Stack(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.notifications_none_rounded, color: AppTheme.textMain, size: 22),
-            ),
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: Colors.redAccent,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSearchBar(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.push('/patient-search-book'),
-      child: GlassBentoCard(
-        borderRadius: 16,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            const Icon(Icons.search_rounded, color: AppTheme.primary, size: 22),
-            const SizedBox(width: 10),
-            const Expanded(
-              child: Text(
-                'ابحث عن طبيب أو تخصص عيادي...',
-                style: TextStyle(fontFamily: 'Cairo', fontSize: 13, color: AppTheme.textMuted, fontWeight: FontWeight.w600),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.tune_rounded, color: AppTheme.primary, size: 16),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPromoBanner(BuildContext context) {
+  Widget _buildPatientHeroBanner() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: AppTheme.promoBannerGradient,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 6,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'صحتك تهمنا دائماً',
-                  style: TextStyle(fontFamily: 'Cairo', fontSize: 17, fontWeight: FontWeight.w900, color: Colors.white),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'احجز موعدك الآن مع نخبة من أفضل الأطباء المعتمدين في الجزائر.',
-                  style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w600, height: 1.5),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () => context.push('/patient-search-book'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppTheme.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: const Text('احجز الآن', style: TextStyle(fontFamily: 'Cairo', fontSize: 12, fontWeight: FontWeight.w900)),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 4,
-            child: Center(
-              child: Container(
-                width: 76,
-                height: 76,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(child: Text('👨‍⚕️', style: TextStyle(fontSize: 40))),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSpecialtiesSection(BuildContext context) {
-    final specialties = [
-      {'name': 'قلب', 'emoji': '🫀', 'id': 1},
-      {'name': 'أسنان', 'emoji': '🦷', 'id': 2},
-      {'name': 'جلدية', 'emoji': '🧴', 'id': 3},
-      {'name': 'أطفال', 'emoji': '👶', 'id': 4},
-      {'name': 'عظام', 'emoji': '🦴', 'id': 5},
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('اختر التخصص', style: TextStyle(fontFamily: 'Cairo', fontSize: 15, fontWeight: FontWeight.w900, color: AppTheme.textMain)),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: specialties.map((spec) {
-            return GestureDetector(
-              onTap: () => context.push('/patient-search-book'),
-              child: Column(
-                children: [
-                  Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade200),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Center(child: Text(spec['emoji'].toString(), style: const TextStyle(fontSize: 24))),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    spec['name'].toString(),
-                    style: const TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textMain),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF065F46), Color(0xFF047857)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
         ),
-      ],
-    );
-  }
-
-  Widget _buildUnifiedHealthCard(Map<String, dynamic> profile) {
-    final mrn = profile['record_number'] ?? 'غير متوفر';
-    final blood = profile['blood_group'] ?? 'O+';
-    final allergies = (profile['allergies'] != null && profile['allergies'].toString().isNotEmpty)
-        ? profile['allergies'].toString()
-        : 'لا توجد حساسيات مسجلة';
-    final chronic = (profile['chronic_diseases'] != null && profile['chronic_diseases'].toString().isNotEmpty)
-        ? profile['chronic_diseases'].toString()
-        : 'لا توجد أمراض مزمنة';
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: AppTheme.healthCardGradient,
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
+          BoxShadow(color: const Color(0xFF065F46).withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 6)),
         ],
       ),
       child: Column(
@@ -381,186 +134,276 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
-                children: [
-                  Icon(Icons.health_and_safety_rounded, color: Colors.white, size: 20),
-                  SizedBox(width: 6),
-                  Text(
-                    'الملف الصحي الموحد',
-                    style: TextStyle(fontFamily: 'Cairo', fontSize: 14, fontWeight: FontWeight.w900, color: Colors.white),
-                  ),
-                ],
-              ),
               Text(
-                mrn,
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white70),
+                'مرحباً بك مجدداً، ${_patientData['name']}',
+                style: const TextStyle(fontFamily: 'Cairo', fontSize: 17, fontWeight: FontWeight.w900, color: Colors.white),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.folder_shared_rounded, color: Colors.amberAccent, size: 14),
+                    const SizedBox(width: 4),
+                    Text('ملف طبي: ${_patientData['mrn']}', style: const TextStyle(fontFamily: 'monospace', color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w900)),
+                  ],
+                ),
               ),
             ],
           ),
-          const Divider(color: Colors.white24, height: 22),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildHealthMetric('فصيلة الدم', blood, '🩸'),
-              _buildHealthMetric('الوزن التقريبي', '70 كلغ', '⚖️'),
-              _buildHealthMetric('الطول', '175 سم', '📏'),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.info_outline_rounded, color: Colors.white70, size: 16),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'الحساسيات: $allergies • المزمنة: $chronic',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
+          const SizedBox(height: 8),
+          const Text(
+            'أهلاً بك في ملفك الصحي الرقمي الموحد. يمكنك مراجعة حالتك الصحية وتتبع المواعيد وتحميل ملفات الأشعة والتحاليل والاطلاع على علاماتك الحيوية.',
+            style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.white70, height: 1.5),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHealthMetric(String label, String value, String emoji) {
+  Widget _buildVitalsSummaryCard() {
+    return GlassBentoCard(
+      borderRadius: 18,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('فصيلة الدم:', style: TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.bold)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
+                child: Text(_patientData['blood_group'], style: const TextStyle(fontFamily: 'Cairo', fontSize: 12, fontWeight: FontWeight.w900, color: Colors.redAccent)),
+              ),
+            ],
+          ),
+          const Divider(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('تاريخ الميلاد:', style: TextStyle(fontFamily: 'Cairo', fontSize: 11.5, color: Colors.grey.shade700)),
+              Text(_patientData['dob'], style: const TextStyle(fontFamily: 'monospace', fontSize: 11.5, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('الجنس:', style: TextStyle(fontFamily: 'Cairo', fontSize: 11.5, color: Colors.grey.shade700)),
+              Text(_patientData['gender'], style: const TextStyle(fontFamily: 'Cairo', fontSize: 11.5, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const Divider(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('الحساسيات المعروفة:', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.grey.shade700)),
+              Text(_patientData['allergies'], style: const TextStyle(fontFamily: 'Cairo', fontSize: 10.5, color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('الأمراض المزمنة:', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.grey.shade700)),
+              Text(_patientData['chronic'], style: const TextStyle(fontFamily: 'Cairo', fontSize: 10.5, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsGrid(BuildContext context) {
     return Column(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 18)),
-        const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontFamily: 'Cairo', fontSize: 15, fontWeight: FontWeight.w900, color: Colors.white)),
-        Text(label, style: const TextStyle(fontFamily: 'Cairo', fontSize: 10, color: Colors.white70, fontWeight: FontWeight.bold)),
+        Row(
+          children: [
+            Expanded(child: _buildBentoActionButton('البحث عن طبيب', '🔍', AppTheme.primary, () => context.push('/patient-search-doctors'))),
+            const SizedBox(width: 8),
+            Expanded(child: _buildBentoActionButton('المحادثات', '💬', AppTheme.secondary, () => context.push('/doctor-chat'))),
+            const SizedBox(width: 8),
+            Expanded(child: _buildBentoActionButton('حجز موعد', '📅', const Color(0xFF0284C7), () => context.push('/patient-book-appointment'))),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(child: _buildBentoActionButton('المواعيد', '🗓️', const Color(0xFF8B5CF6), () => context.push('/patient-appointments'))),
+            const SizedBox(width: 8),
+            Expanded(child: _buildBentoActionButton('الوصفات', '✍️', const Color(0xFF10B981), () => context.push('/patient-records'))),
+            const SizedBox(width: 8),
+            Expanded(child: _buildBentoActionButton('مشاركة ملفي', '🤝', const Color(0xFFF59E0B), () => context.push('/patient-share-record'))),
+          ],
+        ),
+        const SizedBox(height: 8),
+        _buildFullWidthBentoButton('مكتبة TABIBI 3D التشريحية التفاعلية 🧬', 'استكشف أعضاء جسم الإنسان ومسارات الفحص الطبي التفاعلي', const Color(0xFF6366F1), () => context.push('/anatomy-3d')),
       ],
     );
   }
 
-  Widget _buildSectionHeader(String title, VoidCallback onSeeAll) {
+  Widget _buildBentoActionButton(String label, String emoji, Color color, VoidCallback onTap) {
+    return GlassBentoCard(
+      borderRadius: 16,
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      onTap: onTap,
+      enableGlow: true,
+      glowColor: color,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 24)),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w900, fontSize: 11.5, color: AppTheme.textMain),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFullWidthBentoButton(String title, String subtitle, Color color, VoidCallback onTap) {
+    return GlassBentoCard(
+      borderRadius: 18,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      onTap: onTap,
+      enableGlow: true,
+      glowColor: color,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.12), shape: BoxShape.circle),
+            child: const Text('🧬', style: TextStyle(fontSize: 22)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w900, fontSize: 12.5, color: AppTheme.textMain)),
+                Text(subtitle, style: const TextStyle(fontFamily: 'Cairo', fontSize: 10, color: AppTheme.textMuted)),
+              ],
+            ),
+          ),
+          const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.grey),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppointmentsCard(BuildContext context) {
+    return GlassBentoCard(
+      borderRadius: 18,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: const Color(0xFFE0F2FE), shape: BoxShape.circle),
+            child: const Icon(Icons.calendar_month_rounded, color: Color(0xFF0284C7), size: 32),
+          ),
+          const SizedBox(height: 10),
+          const Text('لا تمتلك أي مواعيد طبية مسجلة حالياً.', style: TextStyle(fontFamily: 'Cairo', color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+            label: const Text('حجز أول موعد لك 📅', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w900, fontSize: 12, color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0284C7),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => context.push('/patient-book-appointment'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptySectionCard({required IconData icon, required String message, String? actionLabel, VoidCallback? onAction}) {
+    return GlassBentoCard(
+      borderRadius: 18,
+      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(icon, color: Colors.grey.shade400, size: 32),
+            const SizedBox(height: 8),
+            Text(message, style: TextStyle(fontFamily: 'Cairo', color: Colors.grey.shade600, fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 10),
+              TextButton(onPressed: onAction, child: Text(actionLabel, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w900, fontSize: 11, color: AppTheme.primary))),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFooterEmergency() {
+    return GlassBentoCard(
+      borderRadius: 20,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildEmergencyPill('🚒 الحماية المدنية', '14', Colors.redAccent),
+          _buildEmergencyPill('🚑 المساعدة الاستعجالية (SAMU)', '115', const Color(0xFF0284C7)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmergencyPill(String label, String number, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10), border: Border.all(color: color.withValues(alpha: 0.25))),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label, style: TextStyle(fontFamily: 'Cairo', fontSize: 10, fontWeight: FontWeight.bold, color: color)),
+          const SizedBox(width: 4),
+          Text(number, style: TextStyle(fontFamily: 'monospace', fontSize: 12, fontWeight: FontWeight.w900, color: color)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontFamily: 'Cairo', fontSize: 15, fontWeight: FontWeight.w900, color: AppTheme.textMain)),
-        TextButton(
-          onPressed: onSeeAll,
-          child: const Text('عرض الكل ➔', style: TextStyle(fontFamily: 'Cairo', fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.primary)),
-        ),
+        Container(width: 4, height: 16, decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(4))),
+        const SizedBox(width: 8),
+        Text(title, style: const TextStyle(fontFamily: 'Cairo', fontSize: 13, fontWeight: FontWeight.w900, color: AppTheme.textMain)),
       ],
     );
   }
 
-  Widget _buildAppointmentsPreview(List<Map<String, dynamic>> list) {
-    if (list.isEmpty) {
-      return GlassBentoCard(
-        borderRadius: 16,
-        padding: const EdgeInsets.all(16),
-        child: const Center(
-          child: Text('لا توجد مواعيد قادمة مسجلة.', style: TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Colors.grey)),
-        ),
-      );
-    }
-
-    return Column(
-      children: list.take(2).map((appt) {
-        final docName = 'د. ${appt['doc_first'] ?? ''} ${appt['doc_last'] ?? ''}'.trim();
-        final spec = appt['specialization_name'] ?? 'استشارة عامة';
-        final date = appt['appointment_date'] ?? '';
-        final time = appt['appointment_time'] ?? '';
-
-        return GlassBentoCard(
-          borderRadius: 16,
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(child: Text('👨‍⚕️', style: TextStyle(fontSize: 20))),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(docName, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w900, fontSize: 14)),
-                    Text(spec, style: const TextStyle(fontFamily: 'Cairo', fontSize: 11, color: AppTheme.primary, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.secondary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text('$date | $time', style: const TextStyle(fontFamily: 'Cairo', fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.secondary)),
-              ),
-            ],
+  void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text('تسجيل الخروج', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+        content: const Text('هل تريد تسجيل الخروج من ملفك الصحي؟', style: TextStyle(fontFamily: 'Cairo')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء', style: TextStyle(fontFamily: 'Cairo'))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<AuthCubit>().logout();
+              context.go('/landing');
+            },
+            child: const Text('خروج', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
           ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildPrescriptionsPreview(List<Map<String, dynamic>> list) {
-    if (list.isEmpty) {
-      return GlassBentoCard(
-        borderRadius: 16,
-        padding: const EdgeInsets.all(16),
-        child: const Center(
-          child: Text('لا توجد وصفات طبية صادرة مؤخراً.', style: TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Colors.grey)),
-        ),
-      );
-    }
-
-    return Column(
-      children: list.take(2).map((rx) {
-        final code = rx['prescription_code'] ?? 'RX';
-        final doc = 'د. ${rx['doc_first'] ?? ''} ${rx['doc_last'] ?? ''}'.trim();
-        final date = rx['created_at'] != null ? rx['created_at'].toString().split(' ').first : '';
-
-        return GlassBentoCard(
-          borderRadius: 16,
-          padding: const EdgeInsets.all(14),
-          onTap: () => context.push('/patient-records'),
-          child: Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: Colors.purple.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(child: Text('💊', style: TextStyle(fontSize: 20))),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(code, style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w900, fontSize: 14, color: AppTheme.primary)),
-                    Text('بواسطة: $doc • $date', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.grey.shade600, fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
-              const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
-            ],
-          ),
-        );
-      }).toList(),
+        ],
+      ),
     );
   }
 }

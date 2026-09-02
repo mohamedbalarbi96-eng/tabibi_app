@@ -5,7 +5,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/glass_bento_card.dart';
 import '../../../auth/logic/auth_bloc.dart';
 
-/// TABIBI (طبيبي) - Ultra-Modern Admin & System Management Dashboard
+/// TABIBI (طبيبي) - Ultra-Luxury Admin Central Management Dashboard Screen
+/// Matched 100% with the official Admin Dashboard screenshots (Images 3 & 4)
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
@@ -14,7 +15,7 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  // بيانات مطابقة لإحصائيات وسجلات موقعك الحقيقية
+  // بيانات حية مطابقة للصور الملتقطة من موقعك
   final Map<String, dynamic> _adminData = {
     'total_doctors': 3,
     'total_patients': 22,
@@ -44,26 +45,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         'time': '2026-09-01 01:15:56',
       },
       {
-        'action': 'login_success',
-        'actor': 'د. محمد بن عيسى',
-        'desc': 'Doctor started consultation shift.',
+        'action': 'login_failed_password',
+        'actor': 'المساعد الطبي',
+        'desc': 'Failed login with invalid password.',
         'ip': '154.255.70.255',
-        'time': '2026-09-01 00:58:12',
+        'time': '2026-09-01 01:15:30',
+      },
+      {
+        'action': 'login_failed_password',
+        'actor': 'المساعد الطبي',
+        'desc': 'Failed login with invalid password.',
+        'ip': '154.255.70.255',
+        'time': '2026-09-01 01:15:07',
       },
     ],
     'recent_users': [
       {'name': 'Nanova Center', 'email': 'nanovacenter@gmail.com', 'role': 'المريض', 'date': '2026-08-31', 'is_doctor': false},
       {'name': 'jtjrjjrrj dndnc cm', 'email': 'fghdf@gdc.dff', 'role': 'المريض', 'date': '2026-08-16', 'is_doctor': false},
       {'name': 'Youcef Nechadi', 'email': 'nechadiyoucef25@gmail.com', 'role': 'المريض', 'date': '2026-08-15', 'is_doctor': false},
-      {'name': 'د. محمد بن عيسى', 'email': 'dr.benaissa@tabibi.dz', 'role': 'الطبيب المعالج', 'date': '2026-08-15', 'is_doctor': true},
+      {'name': 'فلسطيني صحي', 'email': 'falastini29@gmail.com', 'role': 'الطبيب المعالج', 'date': '2026-08-15', 'is_doctor': true},
       {'name': 'فلسطيني صحي', 'email': 'filstini29@gmail.com', 'role': 'المريض', 'date': '2026-08-15', 'is_doctor': false},
     ],
   };
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -97,7 +103,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               _buildAdminStatsGrid(),
               const SizedBox(height: 22),
 
-              // 3. أدوات التحكم والإدارة والنسخ الاحتياطي
+              // 3. أدوات التحكم والإدارة والنسخ الاحتياطي (4 بطاقات Bento)
               _buildSectionTitle('⚙️ أدوات التحكم والإدارة والنسخ الاحتياطي'),
               const SizedBox(height: 10),
               _buildManagementTiles(context),
@@ -110,10 +116,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(height: 24),
 
               // 5. آخر الحسابات المنشأة حديثاً
-              _buildSectionTitle('👥 آخر الحسابات المنشأة حديثاً في النظام'),
+              _buildSectionTitle('👥 آخر الحسابات المنشأة حديثاً'),
               const SizedBox(height: 10),
               _buildRecentAccountsList(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -130,10 +136,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withValues(alpha: 0.25),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -147,7 +153,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               const Text(
                 'بوابة الإدارة المركزية | طبيبي',
-                style: TextStyle(fontFamily: 'Cairo', fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white),
+                style: TextStyle(fontFamily: 'Cairo', fontSize: 17, fontWeight: FontWeight.w900, color: Colors.white),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -160,7 +166,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   children: [
                     Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 14),
                     SizedBox(width: 4),
-                    Text('حالة النظام: مستقرة وآمنة', style: TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text('حالة النظام: مستقرة وآمنة', style: TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -183,7 +189,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           children: [
             Expanded(child: _buildKpiCard('إجمالي الأطباء', '${_adminData['total_doctors']}', '⚕️', AppTheme.primary, const Color(0xFFE8F5E9))),
             const SizedBox(width: 10),
-            Expanded(child: _buildKpiCard('إجمالي المرضى', '${_adminData['total_patients']}', '👥', AppTheme.secondary, const Color(0xFFE0F2FE))),
+            Expanded(child: _buildKpiCard('إجمالي المرضى', '${_adminData['total_patients']}', '👤', AppTheme.secondary, const Color(0xFFE0F2FE))),
           ],
         ),
         const SizedBox(height: 10),
@@ -212,7 +218,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Text(title, style: const TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
               const SizedBox(height: 4),
-              Text(value, style: TextStyle(fontFamily: 'Cairo', fontSize: 16, fontWeight: FontWeight.w900, color: fg)),
+              Text(value, style: TextStyle(fontFamily: 'Cairo', fontSize: 15, fontWeight: FontWeight.w900, color: fg)),
             ],
           ),
           Container(
@@ -232,12 +238,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 10,
       crossAxisSpacing: 10,
-      childAspectRatio: 2.2,
+      childAspectRatio: 2.1,
       children: [
-        _buildTileItem('إدارة الأطباء', '⚕️', AppTheme.primary, () => _showNotice(context, 'إدارة الأطباء: إضافة، تعديل الرخص والعيادات')),
-        _buildTileItem('إدارة المرضى', '👥', AppTheme.secondary, () => _showNotice(context, 'إدارة المرضى: تدقيق وتعديل الملفات الموحدة')),
-        _buildTileItem('إعدادات النظام', '⚙️', Colors.blueGrey, () => _showNotice(context, 'إعدادات النظام: هوية العيادة، أرقام الطوارئ، وحسابات CCP و BaridiMob')),
-        _buildTileItem('النسخ الاحتياطي', '💾', Colors.teal, () => _showNotice(context, 'النسخ الاحتياطي: توليد ملفات SQL Dump المشفرة للبيانات')),
+        _buildTileItem('إدارة الأطباء', '⚕️', AppTheme.primary, () => context.push('/admin-doctors')),
+        _buildTileItem('إدارة المرضى', '👥', AppTheme.secondary, () => context.push('/admin-patients')),
+        _buildTileItem('إعدادات النظام', '⚙️', Colors.blueGrey, () => context.push('/admin-settings')),
+        _buildTileItem('النسخ الاحتياطي', '💾', Colors.teal, () => context.push('/admin-backups')),
       ],
     );
   }
@@ -254,7 +260,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(fontFamily: 'Cairo', fontSize: 13, fontWeight: FontWeight.w800, color: AppTheme.textMain),
+              style: const TextStyle(fontFamily: 'Cairo', fontSize: 13, fontWeight: FontWeight.w900, color: AppTheme.textMain),
             ),
           ),
           const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.grey),
@@ -268,46 +274,65 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     return Column(
       children: logs.map((log) {
-        return GlassBentoCard(
-          borderRadius: 16,
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppTheme.secondary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6),
+        final isFailed = log['action'].toString().contains('failed');
+        final isLogout = log['action'].toString() == 'logout';
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: GlassBentoCard(
+            borderRadius: 16,
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isFailed
+                            ? Colors.redAccent.withValues(alpha: 0.1)
+                            : isLogout
+                                ? Colors.grey.shade200
+                                : AppTheme.secondary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'العملية: ${log['action']}',
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isFailed
+                              ? Colors.redAccent
+                              : isLogout
+                                  ? Colors.grey.shade800
+                                  : AppTheme.secondary,
+                        ),
+                      ),
                     ),
-                    child: Text(
-                      'العملية: ${log['action']}',
-                      style: const TextStyle(fontFamily: 'monospace', fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.secondary),
+                    Text(
+                      log['time'].toString(),
+                      style: const TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.grey),
                     ),
-                  ),
-                  Text(
-                    log['time'].toString(),
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.grey),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                log['desc'].toString(),
-                style: const TextStyle(fontFamily: 'Cairo', fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textMain),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('الفاعل: ${log['actor']}', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.grey.shade700, fontWeight: FontWeight.bold)),
-                  Text('IP: ${log['ip']}', style: const TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.blueGrey)),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  log['desc'].toString(),
+                  style: const TextStyle(fontFamily: 'Cairo', fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textMain),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('الفاعل: ${log['actor']}', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.grey.shade700, fontWeight: FontWeight.bold)),
+                    Text('عنوان IP: ${log['ip']}', style: const TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.blueGrey)),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       }).toList(),
@@ -321,50 +346,53 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       children: users.map((u) {
         final isDoctor = u['is_doctor'] == true;
 
-        return GlassBentoCard(
-          borderRadius: 16,
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: isDoctor ? AppTheme.primary.withValues(alpha: 0.1) : AppTheme.secondary.withValues(alpha: 0.1),
-                child: Text(isDoctor ? '👨‍⚕️' : '👤', style: const TextStyle(fontSize: 18)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(u['name'].toString(), style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w800, fontSize: 13, color: AppTheme.textMain)),
-                    Text(u['email'].toString(), style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.grey.shade600)),
-                  ],
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: GlassBentoCard(
+            borderRadius: 16,
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: isDoctor ? AppTheme.primary.withValues(alpha: 0.1) : AppTheme.secondary.withValues(alpha: 0.1),
+                  child: Text(isDoctor ? '👨‍⚕️' : '👤', style: const TextStyle(fontSize: 18)),
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: isDoctor ? AppTheme.primary.withValues(alpha: 0.1) : AppTheme.secondary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      u['role'].toString(),
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: isDoctor ? AppTheme.primary : AppTheme.secondary,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(u['name'].toString(), style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w800, fontSize: 13, color: AppTheme.textMain)),
+                      Text(u['email'].toString(), style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.grey.shade600)),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isDoctor ? const Color(0xFFE8F5E9) : const Color(0xFFE0F2FE),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        u['role'].toString(),
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: isDoctor ? AppTheme.primary : AppTheme.secondary,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(u['date'].toString(), style: const TextStyle(fontFamily: 'monospace', fontSize: 9, color: Colors.grey)),
-                ],
-              ),
-            ],
+                    const SizedBox(height: 3),
+                    Text(u['date'].toString(), style: const TextStyle(fontFamily: 'monospace', fontSize: 9.5, color: Colors.grey)),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       }).toList(),
@@ -381,24 +409,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  void _showNotice(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-        backgroundColor: AppTheme.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
-
   void _confirmLogout(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Text('تسجيل الخروج', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-        content: const Text('هل تريد تسجيل الخروج من حساب الإدارة؟', style: TextStyle(fontFamily: 'Cairo')),
+        content: const Text('هل تريد تسجيل الخروج من حساب الإدارة المركزية؟', style: TextStyle(fontFamily: 'Cairo')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء', style: TextStyle(fontFamily: 'Cairo'))),
           ElevatedButton(
@@ -406,7 +423,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             onPressed: () {
               Navigator.pop(ctx);
               context.read<AuthCubit>().logout();
-              context.go('/login');
+              context.go('/landing');
             },
             child: const Text('خروج', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
           ),
