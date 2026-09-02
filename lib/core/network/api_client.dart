@@ -1,122 +1,76 @@
 import 'package:dio/dio.dart';
-import '../storage/secure_storage.dart';
 import 'api_endpoints.dart';
+import '../storage/secure_storage.dart';
 
-/// TABIBI (طبيبي) - Dual-Server Resilient HTTP Client
+/// TABIBI (طبيبي) - Ultra-Resilient ApiClient with Auto-Failover
 class ApiClient {
-  late final Dio _dio;
-  late final Dio _backupDio;
+  static final ApiClient _instance = ApiClient._internal();
+  factory ApiClient() => _instance;
+
+  late Dio _dio;
   final SecureStorage _storage = SecureStorage();
 
-  ApiClient() {
-    // إعداد السيرفر الأساسي (Java Ngrok)
+  ApiClient._internal() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: ApiEndpoints.baseUrl,
-        connectTimeout: ApiEndpoints.connectTimeout,
-        receiveTimeout: ApiEndpoints.receiveTimeout,
+        baseUrl: ApiEndpoints.javaBaseUrl,
+        connectTimeout: const Duration(seconds: 4),
+        receiveTimeout: const Duration(seconds: 4),
         headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'ngrok-skip-browser-warning': 'true', // لتخطي صفحة تحذير ngrok تلقائياً
         },
       ),
     );
 
-    // إعداد السيرفر الاحتياطي (PHP Web)
-    _backupDio = Dio(
-      BaseOptions(
-        baseUrl: ApiEndpoints.baseUrl,
-        connectTimeout: ApiEndpoints.connectTimeout,
-        receiveTimeout: ApiEndpoints.receiveTimeout,
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-      ),
-    );
-
-    _setupInterceptors(_dio);
-    _setupInterceptors(_backupDio);
-  }
-
-  void _setupInterceptors(Dio client) {
-    client.interceptors.add(
+    // إضافة التوكن والتبديل التلقائي عند انقطاع السيرفر
+    _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final token = await _storage.getToken();
-          if (token != null && token.isNotEmpty) {
+          if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
         },
+        onError: (DioException e, handler) async {
+          // إذا فشل الاتصال بسيرفر Java، نحول تلقائياً إلى سيرفر PHP
+          if (e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.connectionError ||
+              e.type == DioExceptionType.unknown) {
+            
+            if (e.requestOptions.baseUrl == ApiEndpoints.javaBaseUrl) {
+              final newOptions = e.requestOptions;
+              newOptions.baseUrl = ApiEndpoints.phpBaseUrl;
+              ApiEndpoints.baseUrl = ApiEndpoints.phpBaseUrl;
+
+              try {
+                final response = await _dio.fetch(newOptions);
+                return handler.resolve(response);
+              } catch (err) {
+                return handler.next(e);
+              }
+            }
+          }
+          return handler.next(e);
+        },
       ),
     );
   }
 
-  /// طلب GET مع ميزة التحويل التلقائي للسيرفر الاحتياطي
   Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
-    try {
-      return await _dio.get(path, queryParameters: queryParameters);
-    } on DioException catch (primaryError) {
-      if (_shouldFallback(primaryError)) {
-        try {
-          return await _backupDio.get(path, queryParameters: queryParameters);
-        } on DioException catch (backupError) {
-          throw _handleDioError(backupError);
-        }
-      }
-      throw _handleDioError(primaryError);
-    }
+    return await _dio.get(path, queryParameters: queryParameters);
   }
 
-  /// طلب POST مع ميزة التحويل التلقائي للسيرفر الاحتياطي
-  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParameters}) async {
-    try {
-      return await _dio.post(path, data: data, queryParameters: queryParameters);
-    } on DioException catch (primaryError) {
-      if (_shouldFallback(primaryError)) {
-        try {
-          return await _backupDio.post(path, data: data, queryParameters: queryParameters);
-        } on DioException catch (backupError) {
-          throw _handleDioError(backupError);
-        }
-      }
-      throw _handleDioError(primaryError);
-    }
+  Future<Response> post(String path, {dynamic data}) async {
+    return await _dio.post(path, data: data);
   }
 
-  bool _shouldFallback(DioException error) {
-    return error.type == DioExceptionType.connectionError ||
-        error.type == DioExceptionType.connectionTimeout ||
-        (error.response?.statusCode != null && error.response!.statusCode! >= 500);
+  Future<Response> put(String path, {dynamic data}) async {
+    return await _dio.put(path, data: data);
   }
 
-  String _handleDioError(DioException error) {
-    if (error.response?.data != null && error.response?.data is Map) {
-      final message = error.response?.data['message'];
-      if (message != null && message.toString().isNotEmpty) {
-        return message.toString();
-      }
-    }
-
-    switch (error.type) {
-      case DioExceptionType.connectionTimeout:
-      case DioExceptionType.sendTimeout:
-      case DioExceptionType.receiveTimeout:
-        return 'انتهت مهلة الاتصال، يرجى التحقق من سرعة الإنترنت.';
-      case DioExceptionType.connectionError:
-        return 'تعذر الاتصال بالسيرفر، يرجى التأكد من تشغيل الإنترنت في هاتفك.';
-      case DioExceptionType.badResponse:
-        final status = error.response?.statusCode;
-        if (status == 401) return 'جلسة الدخول غير صالحة، يرجى تسجيل الدخول.';
-        if (status == 403) return 'ليس لديك الصلاحية الكافية للوصول لهذا القسم.';
-        if (status == 404) return 'الخدمة المطلوبة غير متوفرة حالياً.';
-        return 'حدث خطأ أثناء معالجة الطلب (كود: $status).';
-      default:
-        return 'حدث خطأ غير متوقع أثناء الاتصال بالشبكة.';
-    }
+  Future<Response> delete(String path) async {
+    return await _dio.delete(path);
   }
 }
