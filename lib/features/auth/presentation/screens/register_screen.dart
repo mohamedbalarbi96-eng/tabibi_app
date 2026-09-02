@@ -7,7 +7,6 @@ import '../../logic/auth_bloc.dart';
 import '../../logic/auth_state.dart';
 
 /// TABIBI (طبيبي) - Ultra-Modern Patient Registration Screen
-/// Matched 100% with the official registration form screenshot
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -156,18 +155,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // بطاقة الهيدر والعنوان
                     _buildFormHeader(),
                     const SizedBox(height: 16),
-
-                    // بطاقة النموذج الزجاجية
                     GlassBentoCard(
                       borderRadius: 24,
                       padding: const EdgeInsets.all(20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // 1. الاسم الأول واللقب
                           Row(
                             children: [
                               Expanded(
@@ -190,8 +185,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ],
                           ),
                           const SizedBox(height: 14),
-
-                          // 2. البريد الإلكتروني ورقم الهاتف
                           Row(
                             children: [
                               Expanded(
@@ -218,8 +211,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ],
                           ),
                           const SizedBox(height: 14),
-
-                          // 3. الجنس وتاريخ الميلاد
                           Row(
                             children: [
                               Expanded(
@@ -255,8 +246,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ],
                           ),
                           const SizedBox(height: 14),
-
-                          // 4. رقم التعريف الوطني وفصيلة الدم
                           Row(
                             children: [
                               Expanded(
@@ -288,8 +277,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ],
                           ),
                           const SizedBox(height: 14),
-
-                          // 5. سؤال الأمان لاسترجاع الحساب
                           DropdownButtonFormField<String>(
                             value: _securityQuestion,
                             isExpanded: true,
@@ -299,12 +286,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       value: q,
                                       child: Text(q, style: const TextStyle(fontFamily: 'Cairo', fontSize: 12), overflow: TextOverflow.ellipsis),
                                     ))
-                                .toList>,
+                                .toList(),
                             onChanged: (v) => setState(() => _securityQuestion = v ?? _securityQuestionsList[0]),
                           ),
                           const SizedBox(height: 14),
-
-                          // 6. إجابة سؤال الأمان
                           TextFormField(
                             controller: _securityAnswerCtrl,
                             style: const TextStyle(fontFamily: 'Cairo', fontSize: 13),
@@ -316,8 +301,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             validator: (v) => (v == null || v.trim().isEmpty) ? 'يرجى كتابة إجابة سؤال الأمان' : null,
                           ),
                           const SizedBox(height: 14),
-
-                          // 7. كلمة المرور وتأكيدها
                           Row(
                             children: [
                               Expanded(
@@ -356,8 +339,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ],
                           ),
                           const SizedBox(height: 24),
-
-                          // 8. زر تأكيد وإنشاء الملف الطبي الموحد
                           Container(
                             height: 50,
                             decoration: BoxDecoration(
@@ -387,8 +368,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ),
                           const SizedBox(height: 14),
-
-                          // 9. رابط العودة لتسجيل الدخول
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
