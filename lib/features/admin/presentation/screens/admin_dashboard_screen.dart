@@ -5,8 +5,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/glass_bento_card.dart';
 import '../../../auth/logic/auth_bloc.dart';
 
-/// TABIBI (طبيبي) - Ultra-Luxury Admin Central Management Dashboard Screen
-/// Matched 100% with the official Admin Dashboard screenshots (Images 3 & 4)
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
@@ -15,7 +13,6 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  // بيانات حية مطابقة للصور الملتقطة من موقعك
   final Map<String, dynamic> _adminData = {
     'total_doctors': 3,
     'total_patients': 22,
@@ -23,48 +20,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     'total_revenue': '37,000.00',
     'system_status': 'مستقرة وآمنة',
     'audit_logs': [
-      {
-        'action': 'login_success',
-        'actor': 'المدير العام',
-        'desc': 'User logged in successfully.',
-        'ip': '154.255.70.255',
-        'time': '2026-09-01 01:34:46',
-      },
-      {
-        'action': 'logout',
-        'actor': 'Moi Hi (مريض)',
-        'desc': 'User logged out.',
-        'ip': '154.255.70.255',
-        'time': '2026-09-01 01:34:05',
-      },
-      {
-        'action': 'login_failed_password',
-        'actor': 'المساعد الطبي',
-        'desc': 'Failed login with invalid password.',
-        'ip': '154.255.70.255',
-        'time': '2026-09-01 01:15:56',
-      },
-      {
-        'action': 'login_failed_password',
-        'actor': 'المساعد الطبي',
-        'desc': 'Failed login with invalid password.',
-        'ip': '154.255.70.255',
-        'time': '2026-09-01 01:15:30',
-      },
-      {
-        'action': 'login_failed_password',
-        'actor': 'المساعد الطبي',
-        'desc': 'Failed login with invalid password.',
-        'ip': '154.255.70.255',
-        'time': '2026-09-01 01:15:07',
-      },
+      {'action': 'login_success', 'actor': 'المدير العام', 'desc': 'User logged in successfully.', 'ip': '154.255.70.255', 'time': '2026-09-01 01:34:46'},
+      {'action': 'logout', 'actor': 'Moi Hi (مريض)', 'desc': 'User logged out.', 'ip': '154.255.70.255', 'time': '2026-09-01 01:34:05'},
     ],
     'recent_users': [
       {'name': 'Nanova Center', 'email': 'nanovacenter@gmail.com', 'role': 'المريض', 'date': '2026-08-31', 'is_doctor': false},
-      {'name': 'jtjrjjrrj dndnc cm', 'email': 'fghdf@gdc.dff', 'role': 'المريض', 'date': '2026-08-16', 'is_doctor': false},
-      {'name': 'Youcef Nechadi', 'email': 'nechadiyoucef25@gmail.com', 'role': 'المريض', 'date': '2026-08-15', 'is_doctor': false},
       {'name': 'فلسطيني صحي', 'email': 'falastini29@gmail.com', 'role': 'الطبيب المعالج', 'date': '2026-08-15', 'is_doctor': true},
-      {'name': 'فلسطيني صحي', 'email': 'filstini29@gmail.com', 'role': 'المريض', 'date': '2026-08-15', 'is_doctor': false},
     ],
   };
 
@@ -83,6 +44,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.view_in_ar_rounded, color: AppTheme.primary),
+            tooltip: 'المكتبة 3D وتشريح الإنسان',
+            onPressed: () => context.push('/anatomy-3d'),
+          ),
+          IconButton(
             icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
             tooltip: 'تسجيل الخروج',
             onPressed: () => _confirmLogout(context),
@@ -95,30 +61,48 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. بانر الإدارة الكحلي الفاخر
               _buildAdminBanner(),
-              const SizedBox(height: 18),
-
-              // 2. شبكة إحصائيات النظام الأربعة
+              const SizedBox(height: 16),
               _buildAdminStatsGrid(),
-              const SizedBox(height: 22),
+              const SizedBox(height: 20),
 
-              // 3. أدوات التحكم والإدارة والنسخ الاحتياطي (4 بطاقات Bento)
+              // زر مميز للأدمن للوصول المباشر للمكتبتين ثلاثية الأبعاد
+              GlassBentoCard(
+                borderRadius: 18,
+                padding: const EdgeInsets.all(14),
+                onTap: () => context.push('/anatomy-3d'),
+                enableGlow: true,
+                glowColor: const Color(0xFF6366F1),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: 0.12), shape: BoxShape.circle),
+                      child: const Text('🩻', style: TextStyle(fontSize: 22)),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('المستودع التشريحي 3D وأطلس الإنسان', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w900, fontSize: 13, color: AppTheme.textMain)),
+                          Text('استعراض مجسمات الأعضاء وأطلس تشريح الجسم الكامل', style: TextStyle(fontFamily: 'Cairo', fontSize: 10.5, color: AppTheme.textMuted)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.grey),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
               _buildSectionTitle('⚙️ أدوات التحكم والإدارة والنسخ الاحتياطي'),
               const SizedBox(height: 10),
               _buildManagementTiles(context),
               const SizedBox(height: 24),
-
-              // 4. سجل التدقيق والعمليات الأمنية (Audit Logs)
               _buildSectionTitle('🛡️ سجل التدقيق والعمليات الأمنية (Audit Logs)'),
               const SizedBox(height: 10),
               _buildAuditLogsList(),
-              const SizedBox(height: 24),
-
-              // 5. آخر الحسابات المنشأة حديثاً
-              _buildSectionTitle('👥 آخر الحسابات المنشأة حديثاً'),
-              const SizedBox(height: 10),
-              _buildRecentAccountsList(),
               const SizedBox(height: 30),
             ],
           ),
@@ -129,103 +113,37 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildAdminBanner() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-        ),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        gradient: const LinearGradient(colors: [Color(0xFF1E293B), Color(0xFF0F172A)]),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'بوابة الإدارة المركزية | طبيبي',
-                style: TextStyle(fontFamily: 'Cairo', fontSize: 17, fontWeight: FontWeight.w900, color: Colors.white),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 14),
-                    SizedBox(width: 4),
-                    Text('حالة النظام: مستقرة وآمنة', style: TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'مرحباً بك مجدداً في لوحة التحكم الفنية الشاملة لعام [2026]. راقب السجلات ودرجات أمان النظام والعمليات السريرية.',
-            style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.white70, height: 1.5),
-          ),
-        ],
-      ),
+      child: const Text('بوابة الإدارة المركزية | طبيبي - حالة النظام: مستقرة وآمنة 🛡️', style: TextStyle(fontFamily: 'Cairo', fontSize: 13.5, fontWeight: FontWeight.w900, color: Colors.white)),
     );
   }
 
   Widget _buildAdminStatsGrid() {
-    return Column(
+    return Row(
       children: [
-        Row(
-          children: [
-            Expanded(child: _buildKpiCard('إجمالي الأطباء', '${_adminData['total_doctors']}', '⚕️', AppTheme.primary, const Color(0xFFE8F5E9))),
-            const SizedBox(width: 10),
-            Expanded(child: _buildKpiCard('إجمالي المرضى', '${_adminData['total_patients']}', '👤', AppTheme.secondary, const Color(0xFFE0F2FE))),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildKpiCard('إجمالي المواعيد', '${_adminData['total_appointments']}', '📅', const Color(0xFF8B5CF6), const Color(0xFFF3E8FF))),
-            const SizedBox(width: 10),
-            Expanded(child: _buildKpiCard('الإيرادات المستلمة', '${_adminData['total_revenue']} د.ج', '🪙', const Color(0xFFF59E0B), const Color(0xFFFEF3C7))),
-          ],
-        ),
+        Expanded(child: _buildKpiCard('الأطباء', '${_adminData['total_doctors']}', '⚕️', AppTheme.primary)),
+        const SizedBox(width: 8),
+        Expanded(child: _buildKpiCard('المرضى', '${_adminData['total_patients']}', '👤', AppTheme.secondary)),
+        const SizedBox(width: 8),
+        Expanded(child: _buildKpiCard('الإيرادات', '${_adminData['total_revenue']} د.ج', '🪙', const Color(0xFFF59E0B))),
       ],
     );
   }
 
-  Widget _buildKpiCard(String title, String value, String emoji, Color fg, Color bg) {
+  Widget _buildKpiCard(String title, String value, String emoji, Color fg) {
     return GlassBentoCard(
-      borderRadius: 18,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      enableGlow: true,
-      glowColor: fg,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      borderRadius: 16,
+      padding: const EdgeInsets.all(12),
+      child: Column(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
-              const SizedBox(height: 4),
-              Text(value, style: TextStyle(fontFamily: 'Cairo', fontSize: 15, fontWeight: FontWeight.w900, color: fg)),
-            ],
-          ),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-            child: Text(emoji, style: const TextStyle(fontSize: 22)),
-          ),
+          Text(emoji, style: const TextStyle(fontSize: 20)),
+          const SizedBox(height: 4),
+          Text(title, style: const TextStyle(fontFamily: 'Cairo', fontSize: 10.5, color: Colors.grey, fontWeight: FontWeight.bold)),
+          Text(value, style: TextStyle(fontFamily: 'Cairo', fontSize: 12, fontWeight: FontWeight.w900, color: fg)),
         ],
       ),
     );
@@ -240,29 +158,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       crossAxisSpacing: 10,
       childAspectRatio: 2.1,
       children: [
-        _buildTileItem('إدارة الأطباء', '⚕️', AppTheme.primary, () => context.push('/admin-doctors')),
-        _buildTileItem('إدارة المرضى', '👥', AppTheme.secondary, () => context.push('/admin-patients')),
-        _buildTileItem('إعدادات النظام', '⚙️', Colors.blueGrey, () => context.push('/admin-settings')),
-        _buildTileItem('النسخ الاحتياطي', '💾', Colors.teal, () => context.push('/admin-backups')),
+        _buildTileItem('إدارة الأطباء', '⚕️', () => context.push('/admin-doctors')),
+        _buildTileItem('إدارة المرضى', '👥', () => context.push('/admin-patients')),
+        _buildTileItem('إعدادات النظام', '⚙️', () => context.push('/admin-settings')),
+        _buildTileItem('النسخ الاحتياطي', '💾', () => context.push('/admin-backups')),
       ],
     );
   }
 
-  Widget _buildTileItem(String title, String emoji, Color color, VoidCallback onTap) {
+  Widget _buildTileItem(String title, String emoji, VoidCallback onTap) {
     return GlassBentoCard(
       borderRadius: 16,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       onTap: onTap,
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 22)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(fontFamily: 'Cairo', fontSize: 13, fontWeight: FontWeight.w900, color: AppTheme.textMain),
-            ),
-          ),
+          Text(emoji, style: const TextStyle(fontSize: 20)),
+          const SizedBox(width: 8),
+          Expanded(child: Text(title, style: const TextStyle(fontFamily: 'Cairo', fontSize: 12.5, fontWeight: FontWeight.w900))),
           const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.grey),
         ],
       ),
@@ -271,126 +184,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildAuditLogsList() {
     final logs = _adminData['audit_logs'] as List<Map<String, dynamic>>;
-
     return Column(
       children: logs.map((log) {
-        final isFailed = log['action'].toString().contains('failed');
-        final isLogout = log['action'].toString() == 'logout';
-
         return Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
           child: GlassBentoCard(
-            borderRadius: 16,
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: isFailed
-                            ? Colors.redAccent.withValues(alpha: 0.1)
-                            : isLogout
-                                ? Colors.grey.shade200
-                                : AppTheme.secondary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'العملية: ${log['action']}',
-                        style: TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: isFailed
-                              ? Colors.redAccent
-                              : isLogout
-                                  ? Colors.grey.shade800
-                                  : AppTheme.secondary,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      log['time'].toString(),
-                      style: const TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.grey),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  log['desc'].toString(),
-                  style: const TextStyle(fontFamily: 'Cairo', fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textMain),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('الفاعل: ${log['actor']}', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.grey.shade700, fontWeight: FontWeight.bold)),
-                    Text('عنوان IP: ${log['ip']}', style: const TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.blueGrey)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildRecentAccountsList() {
-    final users = _adminData['recent_users'] as List<Map<String, dynamic>>;
-
-    return Column(
-      children: users.map((u) {
-        final isDoctor = u['is_doctor'] == true;
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: GlassBentoCard(
-            borderRadius: 16,
+            borderRadius: 14,
             padding: const EdgeInsets.all(12),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: isDoctor ? AppTheme.primary.withValues(alpha: 0.1) : AppTheme.secondary.withValues(alpha: 0.1),
-                  child: Text(isDoctor ? '👨‍⚕️' : '👤', style: const TextStyle(fontSize: 18)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(u['name'].toString(), style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w800, fontSize: 13, color: AppTheme.textMain)),
-                      Text(u['email'].toString(), style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.grey.shade600)),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: isDoctor ? const Color(0xFFE8F5E9) : const Color(0xFFE0F2FE),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        u['role'].toString(),
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: isDoctor ? AppTheme.primary : AppTheme.secondary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(u['date'].toString(), style: const TextStyle(fontFamily: 'monospace', fontSize: 9.5, color: Colors.grey)),
-                  ],
-                ),
+                Text('العملية: ${log['action']} (${log['actor']})', style: const TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold)),
+                Text(log['time'].toString(), style: const TextStyle(fontFamily: 'monospace', fontSize: 9.5, color: Colors.grey)),
               ],
             ),
           ),
@@ -404,31 +209,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       children: [
         Container(width: 4, height: 16, decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(4))),
         const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontFamily: 'Cairo', fontSize: 14, fontWeight: FontWeight.w900, color: AppTheme.textMain)),
+        Text(title, style: const TextStyle(fontFamily: 'Cairo', fontSize: 13, fontWeight: FontWeight.w900, color: AppTheme.textMain)),
       ],
     );
   }
 
   void _confirmLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('تسجيل الخروج', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-        content: const Text('هل تريد تسجيل الخروج من حساب الإدارة المركزية؟', style: TextStyle(fontFamily: 'Cairo')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء', style: TextStyle(fontFamily: 'Cairo'))),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.read<AuthCubit>().logout();
-              context.go('/landing');
-            },
-            child: const Text('خروج', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
+    context.read<AuthCubit>().logout();
+    context.go('/landing');
   }
 }
