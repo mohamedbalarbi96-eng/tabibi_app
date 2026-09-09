@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'core/routing/app_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme/app_theme.dart';
+import 'core/routing/app_router.dart';
 import 'features/auth/logic/auth_bloc.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const TabibiApp());
 }
 
-/// TABIBI (طبيبي) - Root Application Widget
 class TabibiApp extends StatelessWidget {
   const TabibiApp({super.key});
 
@@ -19,12 +18,10 @@ class TabibiApp extends StatelessWidget {
     return BlocProvider(
       create: (context) => AuthCubit()..checkAuthStatus(),
       child: MaterialApp.router(
-        title: 'طبيبي | TABIBI',
+        title: 'TABIBI (طبيبي)',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         routerConfig: AppRouter.router,
-        
-        // دعم اللغة العربية والاتجاه من اليمين لليسار
         locale: const Locale('ar'),
         supportedLocales: const [
           Locale('ar'),
