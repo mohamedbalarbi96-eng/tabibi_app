@@ -15,12 +15,7 @@ class AnatomyViewerScreen extends StatelessWidget {
     try {
       final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!launched && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('تعذر فتح الرابط: $url', style: const TextStyle(fontFamily: 'Cairo')),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
       }
     } catch (_) {
       if (context.mounted) {
@@ -54,7 +49,6 @@ class AnatomyViewerScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // بانر ترحيبي
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(

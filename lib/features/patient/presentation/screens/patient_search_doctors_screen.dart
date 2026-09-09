@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/glass_bento_card.dart';
 
-/// TABIBI (طبيبي) - Ultra-Modern Doctor Search, Filtering, Maps & Ratings Screen
-/// Matched 100% with the official Doctor Search Directory screenshot (Image 3)
+/// TABIBI (طبيبي) - Ultra-Modern Doctor Search, Direct Google Maps & Ratings Screen
 class PatientSearchDoctorsScreen extends StatefulWidget {
   const PatientSearchDoctorsScreen({super.key});
 
@@ -34,7 +34,6 @@ class _PatientSearchDoctorsScreenState extends State<PatientSearchDoctorsScreen>
     'جراحة المخ والأعصاب',
   ];
 
-  // قائمة الأطباء الحقيقية المطابقة للصورة رقم 3
   final List<Map<String, dynamic>> _doctors = [
     {
       'id': 1,
@@ -47,9 +46,8 @@ class _PatientSearchDoctorsScreenState extends State<PatientSearchDoctorsScreen>
       'address': 'الجزائر العاصمة، الجزائر',
       'fee': '2,000.00',
       'phone': '568988',
-      'has_map': false,
-      'lat': 36.7538,
-      'lng': 3.0588,
+      'has_map': true,
+      'map_url': 'https://maps.google.com/?q=36.7538,3.0588',
     },
     {
       'id': 2,
@@ -63,8 +61,7 @@ class _PatientSearchDoctorsScreenState extends State<PatientSearchDoctorsScreen>
       'fee': '2,000.00',
       'phone': '0556612',
       'has_map': true,
-      'lat': 36.7525,
-      'lng': 3.0420,
+      'map_url': 'https://maps.app.goo.gl/UpY2NWv9NcdoRHfC8',
     },
     {
       'id': 3,
@@ -78,8 +75,7 @@ class _PatientSearchDoctorsScreenState extends State<PatientSearchDoctorsScreen>
       'fee': '2,000.00',
       'phone': '066587696',
       'has_map': true,
-      'lat': 35.6970,
-      'lng': -0.6330,
+      'map_url': 'https://maps.google.com/?q=35.6970,-0.6330',
     },
   ];
 
@@ -88,6 +84,29 @@ class _PatientSearchDoctorsScreenState extends State<PatientSearchDoctorsScreen>
     _nameFilterCtrl.dispose();
     _cityFilterCtrl.dispose();
     super.dispose();
+  }
+
+  // فتح موقع الطبيب على خرائط Google Maps مباشرة
+  Future<void> _openGoogleMapsDirectly(Map<String, dynamic> doc) async {
+    final String url = doc['map_url'] ?? 'https://maps.google.com/?q=${doc['address']}';
+    final Uri uri = Uri.parse(url);
+
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched && mounted) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('جاري فتح موقع العيادة لـ ${doc['name']} على خرائط Google Maps...', style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+            backgroundColor: AppTheme.primary,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   void _showDoctorProfileAndRate(Map<String, dynamic> doc) {
@@ -173,51 +192,6 @@ class _PatientSearchDoctorsScreenState extends State<PatientSearchDoctorsScreen>
     );
   }
 
-  void _showClinicMap(Map<String, dynamic> doc) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            const Icon(Icons.location_on, color: Colors.redAccent),
-            const SizedBox(width: 8),
-            Text('موقع العيادة: ${doc['name']}', style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 14)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('🏥 ${doc['clinic']}', style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.primary)),
-            Text('📍 ${doc['address']}', style: TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Colors.grey.shade800)),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(10)),
-              child: Row(
-                children: [
-                  const Icon(Icons.map_rounded, color: Color(0xFF0284C7)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text('الإحداثيات الجغرافية:\nLat: ${doc['lat']}  |  Lng: ${doc['lng']}', style: const TextStyle(fontFamily: 'monospace', fontSize: 11, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.white),
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('حسناً', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final filtered = _doctors.where((d) {
@@ -253,11 +227,8 @@ class _PatientSearchDoctorsScreenState extends State<PatientSearchDoctorsScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. بطاقة البحث والتصفية المتقدمة المطابقة للصورة 3
               _buildSearchFilterCard(),
               const SizedBox(height: 18),
-
-              // 2. قائمة بطاقات الأطباء الثلاثة المطابقة للصورة 3
               ...List.generate(filtered.length, (i) => _buildDoctorDirectoryCard(filtered[i])),
               const SizedBox(height: 40),
             ],
@@ -337,13 +308,12 @@ class _PatientSearchDoctorsScreenState extends State<PatientSearchDoctorsScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // السطر 1: الأفاتار، الاسم، التخصص، والتقييم
             Row(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 26,
-                  backgroundColor: const Color(0xFFE0F2FE),
-                  child: const Text('👨‍⚕️', style: TextStyle(fontSize: 26)),
+                  backgroundColor: Color(0xFFE0F2FE),
+                  child: Text('👨‍⚕️', style: TextStyle(fontSize: 26)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -370,8 +340,6 @@ class _PatientSearchDoctorsScreenState extends State<PatientSearchDoctorsScreen>
               ],
             ),
             const Divider(height: 18),
-
-            // السطر 2: بيانات الخبرة، العيادة، العنوان، التسعيرة، والهاتف
             Text('💼 خبرة: ${doc['experience']}', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.grey.shade700)),
             Text('📍 العيادة: ${doc['clinic']}', style: const TextStyle(fontFamily: 'Cairo', fontSize: 11.5, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
             Text('🏢 العنوان: ${doc['address']}', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.grey.shade700)),
@@ -384,8 +352,6 @@ class _PatientSearchDoctorsScreenState extends State<PatientSearchDoctorsScreen>
               ],
             ),
             const SizedBox(height: 12),
-
-            // السطر 3: الأزرار الأربعة التفاعلية المطابقة للصورة 3
             Row(
               children: [
                 Expanded(
@@ -432,12 +398,16 @@ class _PatientSearchDoctorsScreenState extends State<PatientSearchDoctorsScreen>
             if (doc['has_map'] == true) ...[
               const SizedBox(height: 6),
               SizedBox(
-                height: 34,
+                height: 36,
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.map_rounded, size: 14, color: Color(0xFF0284C7)),
-                  label: const Text('عرض موقع العيادة على الخريطة 🗺️', style: TextStyle(fontFamily: 'Cairo', fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF0284C7))),
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE0F2FE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), elevation: 0),
-                  onPressed: () => _showClinicMap(doc),
+                  icon: const Icon(Icons.location_on_rounded, size: 16, color: Colors.white),
+                  label: const Text('فتح موقع العيادة على خرائط Google Maps 🗺️', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0284C7),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 1,
+                  ),
+                  onPressed: () => _openGoogleMapsDirectly(doc),
                 ),
               ),
             ],
