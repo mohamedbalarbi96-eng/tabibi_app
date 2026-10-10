@@ -136,7 +136,7 @@ jobs:
           name: tabibi-linux-desktop
           path: build/linux/x64/release/bundle/
 
-  # 5. بناء الويب ونشره على Vercel مباشرة
+  # 5. بناء الويب ونشره على Vercel
   build-and-deploy-web:
     name: 🌐 Build Web & Deploy to Vercel
     runs-on: ubuntu-latest
@@ -157,4 +157,4 @@ jobs:
         run: flutter build web --release
 
       - name: Deploy to Vercel
-        run: npx vercel ./build/web --prod --yes --token Vcp_2dESd5fkZ4l0igjF8yjBDWnoi1Oao15eO84vuYwCreGOvob6TB0bKB8s
+        run: npx vercel ./build/web --prod --yes --token ${{ secrets.TABIBI }}
