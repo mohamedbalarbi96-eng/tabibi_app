@@ -159,7 +159,7 @@ jobs:
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-token: 'Y0pTvXFp9SHltYK4JRJA6tel'
+          vercel-org-id: 'd7312230-9887'
+          vercel-project-id: '3d-sadas'
           working-directory: ./build/web
