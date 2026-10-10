@@ -157,5 +157,4 @@ jobs:
         run: flutter build web --release
 
       - name: Deploy to Vercel CLI
-        run: npx vercel --token Y0pTvXFp9SHltYK4JRJA6tel --prod --yes
-        working-directory: ./build/web
+        run: npx vercel ./build/web --token Y0pTvXFp9SHltYK4JRJA6tel --scope d7312230-9887 --prod --yes
