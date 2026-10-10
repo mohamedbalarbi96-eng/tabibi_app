@@ -159,8 +159,8 @@ jobs:
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-token: Vcp_2dESd5fkZ4l0igjF8yjBDWnoi1Oao15eO84vuYwCreGOvob6TB0bKB8s
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          vercel-dir: './build/web'
           working-directory: './build/web'
-          prod: true
+          vercel-args: '--prod'
+          scope: 'd7312230-9887'
