@@ -136,7 +136,7 @@ jobs:
           name: tabibi-linux-desktop
           path: build/linux/x64/release/bundle/
 
-  # 5. بناء الويب ونشره على Vercel تلقائياً
+  # 5. بناء الويب ونشره على Vercel تلقائياً بالطريقة الحديثة
   build-and-deploy-web:
     name: 🌐 Build Web & Deploy to Vercel
     runs-on: ubuntu-latest
@@ -157,9 +157,8 @@ jobs:
         run: flutter build web --release
 
       - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
+        uses: vercel/actions@v1
         with:
           vercel-token: 'Y0pTvXFp9SHltYK4JRJA6tel'
-          vercel-org-id: 'd7312230-9887'
-          vercel-project-id: '3d-sadas'
+          vercel-args: '--prod'
           working-directory: ./build/web
